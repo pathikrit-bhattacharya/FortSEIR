@@ -10,16 +10,12 @@ endif
 # Directories
 OBJDIR = $(PWD)/obj
 SRCDIR = $(PWD)/src
-#MCMCDIR = /home/pathikri/Documents/friction_inverse/MCMC_codes_full
-NRDIR  = $(PWD)/numrec_src
-#ODEPACKDIR = $(PWD)/../ODEPACK
-#FFTDIR = /opt/intel/mkl/lib/intel64
-#LIBDIR = $(MKLROOT)/lib/intel64
+NRDIR  = $(PWD)/NRdir
 
 
 
 
-# Libraries
+# Libraries - 
 LIBS = ${MKLROOT}/lib/intel64/libmkl_lapack95_ilp64.a -liomp5 -lpthread -lm -ldl
 
 # Files and folders
