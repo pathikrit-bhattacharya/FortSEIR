@@ -9,7 +9,7 @@ endif
 
 # Directories
 OBJDIR = $(PWD)/obj
-SRCDIR = $(PWD)/src
+SRCDIR = $(PWD)/src_age_structure
 NRDIR  = $(PWD)/NRdir
 
 
