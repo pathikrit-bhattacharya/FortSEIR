@@ -1,5 +1,7 @@
 % Read data form unformatted binary file
 fname = [pwd '\out\pred_out'];
+% what tstep to plot histogram: options are 'max' or 'final'
+step_choose = 'final';
 N_tot = 1.37e9;
 fid   = fopen(fname);
 nx    = 16*6;
@@ -41,7 +43,12 @@ xlabel('Time from onset [days]')
 ylabel('# of People')
 set(gca,'Fontsize',20)
 figure
-bar_stack = [E(plot_ind,:)' Is(plot_ind,:)' Ia(plot_ind,:)' R(plot_ind,:)'];
+if strcmp(step_choose,'max')
+    tstep = plot_ind;
+elseif strcmp(step_choose,'final')
+    tstep = length(I_tot);
+end
+bar_stack = [E(tstep,:)' Is(tstep,:)' Ia(tstep,:)' R(tstep,:)'];
 ageclass = {'0-4','5-9','10-14','15-19','20-24','25-29','30-34','35-39', ...
     '40-44','45-49','50-54','55-59','60-64','65-69','70-74','75+'};
 X = categorical(ageclass);
