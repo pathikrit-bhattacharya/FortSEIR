@@ -140,7 +140,7 @@ time   = t_loc(1)
 ! First write, initial conditions
 shp_out = (/6, 16/)
 output = reshape(yt(:),shp_out)
-write(20,rec=1) output*spread(Nis,1,ncmp)*N_tot
+write(20,rec=1) output*N_tot
 call print_matrix('ouput: ',6,16,output)
 
 do i = 2,nt
@@ -176,7 +176,7 @@ do i = 2,nt
 	  !  write(20,'(5e16.9)') t_loc(i), N_tot*yt(1:4)
 	  !  write(*,'(I8,A8,I8,A6)') i, ' out of ', nt, ' steps'
 	  output = reshape(yt(:),shp_out)
-	  write(20,rec=(i-1)+1) output*spread(Nis,1,ncmp)*N_tot  ! Write out file
+	  write(20,rec=(i-1)+1) output*N_tot  ! Write out file
 enddo
 
 close(20)
