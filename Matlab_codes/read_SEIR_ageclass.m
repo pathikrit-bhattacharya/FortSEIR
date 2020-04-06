@@ -1,22 +1,29 @@
 % Read data form unformatted binary file
 fname = [pwd '\out\pred_out'];
+fRname = [pwd '\out\R_out'];
 % what tstep to plot histogram: options are 'max' or 'final'
-step_choose = 'final';
+step_choose = 'max';
 N_tot = 1.37e9;
 fid   = fopen(fname);
-nx    = 16*6;
+fRid  = fopen(fRname);
+nac   = 16;
+neq   = 6;
+nx    = nac*neq;
 S     = [];
 E     = [];
-Is     = [];
-Ia     = [];
+Is    = [];
+Ia    = [];
 R     = [];
 N     = [];
-nt    = 3650;
-dt    = 0.1;
-t     = cumsum(dt*ones(3650,1));
+R0    = [];
+nt    = 365;
+dt    = 1.d0;
+t     = cumsum(dt*ones(nt,1));
 t     = [0;t(1:end-1)];
 for i=1:nt
     dat = fread(fid,nx,'double');
+    T   = fread(fRid,[3*nac 3*nac],'double');
+    Sigma = fread(fRid,[3*nac 3*nac],'double');
     dat = dat';
     S   = [S;dat(1:6:nx)];
     E   = [E;dat(2:6:nx)];
@@ -24,6 +31,8 @@ for i=1:nt
     Ia  = [Ia;dat(4:6:nx)];
     R   = [R;dat(5:6:nx)];
     N   = [N;dat(6:6:nx)];
+    lambda = eig(-T*inv(Sigma));
+    R0  = [R0;max(lambda)];
 end
 S_tot = sum(S,2);
 Ia_tot = sum(Ia,2);
@@ -58,4 +67,10 @@ set(h, {'DisplayName'}, {'E','I_s','I_a','R'}')
 set(gca,'Fontsize',20)
 xlabel('Age')
 ylabel('log # of people')
+figure;
+h = plot(t,R0);
+xlabel('Time from onset [days]')
+ylabel('R_{eff}(t)')
+set(gca,'Fontsize',20)
 fclose(fid);
+fclose(fRid);
