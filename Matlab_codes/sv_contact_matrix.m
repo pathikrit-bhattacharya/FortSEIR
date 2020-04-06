@@ -24,7 +24,7 @@ figure
 for i = 3:2:12
    name = [datadir '\' dir_content(i).name];
    cm_type = dir_content(i).name;
-   A = xlsread(name,'Germany','A2:P17');
+   A = xlsread(name,'India','A2:P17');
    c = i-2-k;
    k = k+1; 
    subplot('Position',pos(k,:))
@@ -37,8 +37,8 @@ for i = 3:2:12
    xticks(0:10:80)
    yticks(0:10:80)
    lab_plot(lab_plot==' ')='_';
-%    fname = [pwd '\input\mat_files_India\' lab_plot(1:end-2) '.txt'];
-%    fid   = fopen(fname,'w+');
-%    fprintf(fid,[repmat('%16.9e ',1,15) '%16.9e\n'],A');
-%    fclose(fid);
+   fname = [pwd '\input\mat_files_India\' lab_plot(1:end-2) '.txt'];
+   fid   = fopen(fname,'w+');
+   fprintf(fid,[repmat('%16.9e ',1,15) '%16.9e\n'],A');
+   fclose(fid);
 end
