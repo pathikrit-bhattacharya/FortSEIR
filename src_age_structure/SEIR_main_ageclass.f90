@@ -15,6 +15,7 @@ real(8)                              :: dt_try, dt_next, time, timesv, dt_did
 real(8)                              :: dt, rtol, atol, acc
 integer                              :: nt
 integer                              :: i, ix, ioerr1, ioerr2, irecout, sizeout(2), t_count, irecspace
+integer                              :: irecspace2
 real                                 :: start, finish, time_tot
 real(8), DIMENSION(ncmp,nac)         :: output
 INTEGER, DIMENSION(2)                :: shp_out
@@ -96,16 +97,16 @@ Rm0 = beta/gamm(1)
 !--------------------------------------------------------------------------------------------------!
 ! Define initial values for the simulation, all proportions with respect to N_tot
 yt(1:neq:ncmp) = S0(:)           ! Intial proportion of susceptible - S_a's
-yt(2:neq:ncmp) = I0(:)           ! Initial population of exposed    - E_a's
+yt(2:neq:ncmp) = 10.75d0*I0(:)            ! Initial population of exposed    - E_a's
 yt(3:neq:ncmp) = I0(:)           ! Initial proportion of infected, symptomatic   - I_s's
-yt(4:neq:ncmp) = 0.d0*I0(:)      ! Initial proportion of infected, symptomatic   - I_a's
+yt(4:neq:ncmp) = 0.25*I0(:)      ! Initial proportion of infected, symptomatic   - I_a's
 yt(5:neq:ncmp) = 0.d0            ! Initial proportion of recovered  - R_a's
 yt(6:neq:ncmp) = Nis             ! Initial value of population fraction
 
 !--------------------------------------------------------------------------------------------------!
 ! Set up solver stuff
 !--------------------------------------------------------------------------------------------------!
-dt = 0.1d0   ! Assign time step
+dt = 1.d0   ! Assign time step
 
 write(*,'(A15, F7.4)') 'Initial time step: ', dt
 
@@ -121,7 +122,7 @@ do i=2,nt
 enddo
 
 !--------------------------------------------------------------------------------------------------!
-! Open output file
+! Open output files
 !--------------------------------------------------------------------------------------------------!
 ! Set block size in file access for unformatted file
 inquire(iolength = irecspace) output(:,:)  ! How many machine specific units of data shall we dump on each write?
@@ -131,7 +132,11 @@ open(unit=20,file=outfile,form="unformatted", access="direct", recl=irecspace, s
 !write(20,'(5e16.9)') alpha, beta, gamm, rho_in, Rm0
 ! First output: Format >>> t S(t) E(t) I(t) R(t)
 !write(20,'(5e16.9)') t_loc(1), N_tot*yt(1:4)
-
+inquire(iolength = irecspace2) Tmat(:,:)
+open(unit=30,file=out_R,form="unformatted", access="direct", recl=irecspace2, status = 'REPLACE') ! Open the unformatted binary file for writing T and Sigma
+!--------------------------------------------------------------------------------------------------!
+! Set solver parameters
+!--------------------------------------------------------------------------------------------------!
 rtol   = 1.d-6 ! When 0.d0, pure absolute error control
 atol   = 0.d0 ! When 0.d0, pure relative error control
 acc    = 1.d-6
@@ -140,10 +145,19 @@ time   = t_loc(1)
 ! First write, initial conditions
 shp_out = (/6, 16/)
 output = reshape(yt(:),shp_out)
+write(*,*) N_tot
 write(20,rec=1) output*N_tot
-call print_matrix('ouput: ',6,16,output)
+! First write of T and sigma
+call derivs_agc(time,yt,dydt)
+call r0_out(Tmat,Smat,alpha,gamm,kappa,rho,mu_d,beta,Nis,C_tot)
+write(30,rec=1) Tmat  ! Write out Tmat
+write(30,rec=2) Smat  ! Write out Smat
 
-do i = 2,nt
+! call print_matrix('S_matrix : ',3*nac,3*nac,Smat)
+!--------------------------------------------------------------------------------------------------!
+! Begin time loop
+!--------------------------------------------------------------------------------------------------!
+do i = 2,3
 
 	dt_try = dt
 !-----------------------------------------------------------------------------------
@@ -177,8 +191,15 @@ do i = 2,nt
 	  !  write(*,'(I8,A8,I8,A6)') i, ' out of ', nt, ' steps'
 	  output = reshape(yt(:),shp_out)
 	  write(20,rec=(i-1)+1) output*N_tot  ! Write out file
+
+	  ! Output the T and Sigma matrices for the time step
+	  call r0_out(Tmat,Smat,alpha,gamm,kappa,rho,mu_d,beta,Nis,C_tot)
+	  write(30,rec=2*(i-1)+1) Tmat  ! Write out Tmat
+	  write(30,rec=2*(i-1)+2) Smat  ! Write out Smat
+
 enddo
 
 close(20)
+close(30)
 
 end program seir_main_ageclass
