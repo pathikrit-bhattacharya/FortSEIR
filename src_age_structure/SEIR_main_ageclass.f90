@@ -97,8 +97,8 @@ Rm0 = beta/gamm(1)
 !--------------------------------------------------------------------------------------------------!
 ! Define initial values for the simulation, all proportions with respect to N_tot
 yt(1:neq:ncmp) = S0(:)           ! Intial proportion of susceptible - S_a's
-yt(2:neq:ncmp) = 10.75d0*I0(:)            ! Initial population of exposed    - E_a's
-yt(3:neq:ncmp) = I0(:)           ! Initial proportion of infected, symptomatic   - I_s's
+yt(2:neq:ncmp) = 0.d0*I0(:)           ! Initial population of exposed    - E_a's
+yt(3:neq:ncmp) = 1.d0*I0(:)           ! Initial proportion of infected, symptomatic   - I_s's
 yt(4:neq:ncmp) = 0.25*I0(:)      ! Initial proportion of infected, symptomatic   - I_a's
 yt(5:neq:ncmp) = 0.d0            ! Initial proportion of recovered  - R_a's
 yt(6:neq:ncmp) = Nis             ! Initial value of population fraction
@@ -106,7 +106,7 @@ yt(6:neq:ncmp) = Nis             ! Initial value of population fraction
 !--------------------------------------------------------------------------------------------------!
 ! Set up solver stuff
 !--------------------------------------------------------------------------------------------------!
-dt = 1.d0   ! Assign time step
+dt = 0.1d0   ! Assign time step
 
 write(*,'(A15, F7.4)') 'Initial time step: ', dt
 
@@ -157,7 +157,7 @@ write(30,rec=2) Smat  ! Write out Smat
 !--------------------------------------------------------------------------------------------------!
 ! Begin time loop
 !--------------------------------------------------------------------------------------------------!
-do i = 2,3
+do i = 2,nt
 
 	dt_try = dt
 !-----------------------------------------------------------------------------------
