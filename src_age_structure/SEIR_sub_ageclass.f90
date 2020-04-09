@@ -31,7 +31,7 @@ if (homo_lockdown == 1) then
 !--------------------------------------------------------------------------------------------------!
 ! No age structure in lockdown, all contact matrices are affected equally
 !--------------------------------------------------------------------------------------------------!
-	locdown_func  = 1.d0 - 0.5d0*(tanh((t-t_lck)/0.5d0) - tanh((t-t_ulck)/0.5d0))
+	locdown_func  = 1.d0 - 0.5d0*(tanh((t-t_lck)/0.1d0) - tanh((t-t_ulck)/0.1d0))
 	C_tot = locdown_func*C_s + C_h + locdown_func*C_o + locdown_func*C_w
 
 elseif (homo_lockdown == 2) then
@@ -65,9 +65,9 @@ endif
 ! yt(5:neq:ncmp) --> Initial # of recovered - R_a's
 ! yt(6:neq:ncmp) --> Total proportion - R_a's
 
-dydt(1:neq:ncmp) = lambda*y(6:neq:ncmp) - beta*y(1:neq:ncmp)*matvec_MKL(C_tot,y(3:neq:ncmp)/Nis) &
-  - alpha*beta*y(1:neq:ncmp)*matvec_MKL(C_tot,y(4:neq:ncmp)/Nis) - mu_n(:)*y(1:neq:ncmp)
-dydt(2:neq:ncmp) = beta*y(1:neq:ncmp)*matvec_MKL(C_tot,y(3:neq:ncmp)/Nis) + alpha*beta*y(1:neq:ncmp)*matvec_MKL(C_tot,y(4:neq:ncmp)/Nis) &
+dydt(1:neq:ncmp) = lambda*y(6:neq:ncmp) - alpha*beta*y(1:neq:ncmp)*matvec_MKL(C_tot,y(3:neq:ncmp)/Nis) &
+  - beta*y(1:neq:ncmp)*matvec_MKL(C_tot,y(4:neq:ncmp)/Nis) - mu_n(:)*y(1:neq:ncmp)
+dydt(2:neq:ncmp) = alpha*beta*y(1:neq:ncmp)*matvec_MKL(C_tot,y(3:neq:ncmp)/Nis) + beta*y(1:neq:ncmp)*matvec_MKL(C_tot,y(4:neq:ncmp)/Nis) &
  - kappa(:)*y(2:neq:ncmp) - mu_d(:)*y(2:neq:ncmp)
 dydt(3:neq:ncmp) = rho(:)*kappa(:)*y(2:neq:ncmp) - (gamm(:)+mu_d(:))*y(3:neq:ncmp)
 dydt(4:neq:ncmp) = (1.d0-rho(:))*kappa(:)*y(2:neq:ncmp) - (gamm(:)+mu_d(:))*y(4:neq:ncmp)
@@ -87,22 +87,22 @@ END SUBROUTINE derivs_agc
  real(8), dimension(:,:), intent(in) :: Amat ! Input matrix for the matrix vector product A*v
  real(8), dimension(:), intent(in)   :: v
  real(8), dimension(size(Amat,1))    :: y ! Output vector, y = A*v
- real(8)                             :: alpha, beta ! scalars, dgemm allows for the product C = alpha*A*B + beta*C
+ real(8)                             :: alph, bet ! scalars, dgemm allows for the product C = alpha*A*B + beta*C
  integer 			                 :: m, k, n
 
  if (size(Amat,2) /= size(v)) then
 	write(*,'(A,I4,A,I4)') 'size(Amat,2) = ', size(Amat,2), ', size(v) = ', size(v)
  	stop 'Matrix-vector multiplication rule violated in C=A*v, ncolA .neq. nrowv' ! Check for valid multiplication
  end if
- m = size(Amat,1); k = size(Amat,2); n = 1 ! Assigning size values
+ m = size(Amat,1); n = size(Amat,2) ! Assigning size values
  !----------------------------------------------------------------------------!
  ! DGEMV calculates y = alpha*A*x + beta*y
  ! call dgemv(trans, m, n, alpha, a, lda, x, incx, beta, y, incy)
  !----------------------------------------------------------------------------!
- alpha = 1.d0 ! Unscaled product
- beta  = 0.d0 ! Nothing is being added
+ alph = 1.d0 ! Unscaled product
+ bet  = 0.d0 ! Nothing is being added
  !----------------------------------------------------------------------------!
- CALL DGEMV('N',m,n,alpha,Amat,m,v,1,beta,y,1)
+ CALL DGEMV('N',m,n,alph,Amat,m,v,1,bet,y,1)
  
  end function matvec_MKL
 
@@ -166,7 +166,7 @@ END SUBROUTINE derivs_agc
 !-------------------------------------------------------------------------------------------------------!
 		do i = 1,nac
 			do j = nac+1, 2*nac
-				Tm(i,j) = b*C(i,j-nac)*nf(i)/nf(j-nac)
+				Tm(i,j) = a*b*C(i,j-nac)*nf(i)/nf(j-nac)
 				Sm(i,j) = 0.d0
 			enddo
 		enddo
@@ -176,7 +176,7 @@ END SUBROUTINE derivs_agc
 !-------------------------------------------------------------------------------------------------------!
 		do i = 1,nac
 			do j = 2*nac+1, 3*nac
-				Tm(i,j) = a*b*C(i,j-2*nac)*nf(i)/nf(j-2*nac)
+				Tm(i,j) = b*C(i,j-2*nac)*nf(i)/nf(j-2*nac)
 				Sm(i,j) = 0.d0
 			enddo
 		enddo
